@@ -1,0 +1,26 @@
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Binaries and build artifacts
+bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+coverage.out
+
+# Logs and runtime dumps
+*.log
+logs/
+logs.txt
+
+# IDEs and OS metadata
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

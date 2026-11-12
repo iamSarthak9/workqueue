@@ -1,0 +1,50 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: workqueue-redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  producer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: workqueue-producer
+    command: ["/app/producer"]
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - PORT_PRODUCER=8080
+      - QUEUE_NAME=workqueue:tasks
+      - LOG_LEVEL=INFO
+    ports:
+      - "8080:8080"
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: workqueue-worker
+    command: ["/app/worker"]
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - PORT_WORKER=8081
+      - QUEUE_NAME=workqueue:tasks
+      - DLQ_NAME=workqueue:dlq
+      - WORKER_CONCURRENCY=5
+      - LOG_LEVEL=INFO
+    ports:
+      - "8081:8081"
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
